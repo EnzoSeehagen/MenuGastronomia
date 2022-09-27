@@ -9,18 +9,23 @@ def cadastro(request):
         email = request.POST['email']
         senha = request.POST['password']
         senha2 = request.POST['password2']
-        if not nome.strip():
+        if campo_vazio(nome):
+            messages.error(request, 'Preencha todos os campos para prosseguir')
             return redirect('cadastro')
-        if not email.strip():
+        if campo_vazio(email):
+            messages.error(request, 'Preencha todos os campos para prosseguir')
             return redirect('cadastro')
-        if senha != senha2:
+        if senhas_nao_sao_iguais(senha, senha2):
             messages.error(request, 'As senhas não conferem!')
             return redirect('cadastro')
         if User.objects.filter(email=email).exists():
+            messages.error(request, "Usuário já cadastrado!")
+            return redirect('cadastro')
+        if User.objects.filter(username=nome).exists():
+            messages.error(request, "Usuário já cadastrado!")
             return redirect('cadastro')
         user = User.objects.create_user(username=nome, email=email, password=senha)
         user.save()
-        print('Usuario cadastrado com sucesso')
         messages.success(request, 'Cadastro realizado com sucesso!')
         return redirect('login')
     else:
@@ -55,6 +60,7 @@ def dashboard(request):
         return redirect('index')
 
 def cria_receita(request):
+
     if request.method == 'POST':
         nome_receita = request.POST['nome_receita']
         ingredientes = request.POST['ingredientes']
@@ -70,3 +76,9 @@ def cria_receita(request):
 
     else:
         return render(request, 'usuarios/cria_receita.html')
+
+def campo_vazio(campo):
+    return not campo.strip()
+
+def senhas_nao_sao_iguais(senha, senha2):
+    return senha != senha2
