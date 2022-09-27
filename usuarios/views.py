@@ -12,8 +12,8 @@ def cadastro(request):
         if campo_vazio(nome):
             messages.error(request, 'Preencha todos os campos para prosseguir')
             return redirect('cadastro')
-        if campo_vazio(email):
-            messages.error(request, 'Preencha todos os campos para prosseguir')
+        if campo_vazio(email) or campo_vazio(senha):
+            messages.error(request, 'Os campos email e senha não podem ficar em branco')
             return redirect('cadastro')
         if senhas_nao_sao_iguais(senha, senha2):
             messages.error(request, 'As senhas não conferem!')
@@ -35,7 +35,8 @@ def login(request):
     if request.method == 'POST':
         email = request.POST['email']
         senha = request.POST['senha']
-        if email == "" or senha == "":
+        if campo_vazio(email) or campo_vazio(senha):
+            messages.error(request, "Os campos email e senha não podem ficar em branco")
             return redirect('login')
         if User.objects.filter(email=email).exists():
             nome = User.objects.filter(email=email).values_list('username', flat=True).get()
@@ -53,7 +54,7 @@ def logout(request):
 def dashboard(request):
     if request.user.is_authenticated:
         id = request.user.id
-        receitas = Receita.objects.filter(pessoa=id)
+        receitas = Receita.objects.filter(pessoas=id)
         dados = {'receitas' : receitas}
         return render(request, 'usuarios/dashboard.html', dados)
     else:
